@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ラーメン残りスープ超難関検定</title>
+<style>
+  :root{
+    --bg:#120b08;
+    --panel:#21140f;
+    --panel2:#2f1c13;
+    --ink:#fff4df;
+    --muted:#c9a987;
+    --accent:#ff9f1c;
+    --accent2:#d94d1a;
+    --ok:#4ade80;
+    --ng:#fb7185;
+    --line:rgba(255,210,150,.18);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 20% 10%, rgba(255,159,28,.16), transparent 30%),
+      radial-gradient(circle at 80% 0%, rgba(217,77,26,.15), transparent 25%),
+      linear-gradient(135deg,#100805,#231009 45%,#120b08);
+    overflow-x:hidden;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:20px}
+  header{
+    padding:22px 18px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(47,28,19,.88),rgba(33,20,15,.94));
+    border-radius:24px;
+    box-shadow:0 18px 50px rgba(0,0,0,.35);
+    position:relative;
+    overflow:hidden;
+  }
+  header:before{
+    content:"";
+    position:absolute;inset:-80px auto auto -40px;
+    width:220px;height:220px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,191,87,.18),transparent 62%);
+  }
+  h1{margin:0;font-size:clamp(26px,5vw,44px);line-height:1.05;letter-spacing:.03em}
+  .subtitle{color:var(--muted);margin-top:10px;line-height:1.75}
+  .badgeRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .badge{border:1px solid var(--line);background:rgba(0,0,0,.18);padding:7px 10px;border-radius:999px;color:#ffe2b5;font-size:13px}
+  main{margin-top:18px;display:grid;gap:16px}
+  .card{
+    border:1px solid var(--line);
+    background:rgba(33,20,15,.92);
+    border-radius:22px;
+    padding:18px;
+    box-shadow:0 12px 35px rgba(0,0,0,.24);
+  }
+  .topbar{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+  .meters{display:flex;flex-wrap:wrap;gap:10px}
+  .meter{background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:14px;padding:9px 11px;color:#ffe2b5;font-size:14px}
+  .danger{color:#ffd29d}
+  .progress{height:12px;background:#130905;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:12px}
+  .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.35s ease}
+  .questionMeta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px;margin-bottom:12px;flex-wrap:wrap}
+  .question{font-size:clamp(18px,3vw,24px);font-weight:750;line-height:1.55;white-space:pre-wrap}
+  .miniCase{margin-top:12px;padding:12px;border-radius:16px;background:rgba(0,0,0,.18);border:1px dashed rgba(255,210,150,.25);color:#f6d6ad;line-height:1.7;font-size:14px}
+  .answers{display:grid;gap:10px;margin-top:16px}
+  button{
+    font:inherit;color:inherit;border:none;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .answer{
+    text-align:left;border:1px solid var(--line);background:linear-gradient(180deg,rgba(47,28,19,.96),rgba(30,17,12,.96));
+    border-radius:16px;padding:13px 14px;line-height:1.55;min-height:58px;
+    display:grid;grid-template-columns:auto 1fr;gap:11px;align-items:start;
+    transition:.16s ease;
+  }
+  .answer:hover,.answer:focus{transform:translateY(-1px);border-color:rgba(255,159,28,.58);outline:none}
+  .answer.selected{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,159,28,.16) inset;background:linear-gradient(180deg,rgba(94,48,18,.95),rgba(42,22,12,.96))}
+  .answer.correct{border-color:rgba(74,222,128,.9);box-shadow:0 0 0 3px rgba(74,222,128,.13) inset}
+  .answer.wrong{border-color:rgba(251,113,133,.9);box-shadow:0 0 0 3px rgba(251,113,133,.12) inset}
+  .label{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:10px;background:rgba(255,159,28,.16);color:#ffd59a;font-weight:800;flex:0 0 auto}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+  .primary,.ghost{
+    border-radius:14px;padding:12px 15px;font-weight:750;border:1px solid var(--line)
+  }
+  .primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#221006}
+  .primary:disabled{opacity:.45;cursor:not-allowed}
+  .ghost{background:rgba(0,0,0,.22);color:#ffe1b9}
+  .selectBox{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:14px;padding:8px 10px;color:#ffe1b9}
+  select{background:#1b0e09;color:#ffe1b9;border:1px solid var(--line);border-radius:10px;padding:7px}
+  .explain{display:none;margin-top:15px;border-left:4px solid var(--accent);padding:12px 13px;background:rgba(255,159,28,.09);border-radius:12px;line-height:1.75;color:#ffe1b9}
+  .explain.show{display:block}
+  .startGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+  .rules li{margin:.6em 0;color:#f3d4ad;line-height:1.65}
+  .rank{font-size:28px;font-weight:900;color:#ffd18f;margin:.2em 0}
+  .resultBig{font-size:clamp(26px,5vw,46px);font-weight:950;margin:0;color:#fff0d2}
+  .soupBowl{height:160px;border-radius:50%;background:radial-gradient(ellipse at 50% 44%, #ffb65f 0 20%, #9f3f19 42%, #3b160d 66%, #1a0c08 73%);border:10px solid #e6c092;box-shadow:inset 0 0 28px rgba(0,0,0,.45),0 18px 35px rgba(0,0,0,.3);position:relative;overflow:hidden}
+  .soupBowl:after{content:"";position:absolute;inset:38% 16%;border-radius:50%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);transform:rotate(-12deg)}
+  .oil{position:absolute;border-radius:50%;background:rgba(255,216,91,.42);filter:blur(.4px)}
+  .o1{width:52px;height:20px;left:30%;top:40%;transform:rotate(-16deg)}
+  .o2{width:26px;height:14px;left:58%;top:33%;transform:rotate(18deg)}
+  .o3{width:36px;height:16px;left:48%;top:56%;transform:rotate(8deg)}
+  .hidden{display:none!important}
+  .history{display:grid;gap:8px;margin-top:12px}
+  .histItem{padding:10px;border-radius:12px;background:rgba(0,0,0,.18);border:1px solid var(--line);font-size:13px;color:#f3d4ad;line-height:1.5}
+  .histItem b{color:#fff1d2}
+  footer{color:#b99572;text-align:center;font-size:12px;padding:22px 0 10px}
+  @media(max-width:760px){
+    .startGrid{grid-template-columns:1fr}.topbar{grid-template-columns:1fr}.wrap{padding:12px}.card,header{border-radius:18px}.answer{padding:12px}.controls{align-items:stretch}.primary,.ghost,.selectBox{width:100%;justify-content:center}.soupBowl{height:130px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ラーメン残りスープ<br>超マニアック検定</h1>
+    <div class="subtitle">飲み干す前の数十mLに潜む、油膜・塩分・乳化・麺由来デンプン・温度低下・丼底沈殿・レンゲ観察を問う、異様に難しい4択ゲームです。</div>
+    <div class="badgeRow">
+      <span class="badge">選択肢は全部それっぽい</span>
+      <span class="badge">正解文だけ長い問題を禁止</span>
+      <span class="badge">自信度ベット制</span>
+      <span class="badge">毎回シャッフル</span>
+      <span class="badge">スマホ対応</span>
+    </div>
+  </header>
+
+  <main>
+    <section id="start" class="card startGrid">
+      <div>
+        <h2>検定開始</h2>
+        <p class="subtitle">残りスープを「ただの汁」と見た瞬間に負けです。最後の一口には、温度履歴、麺の溶出、脂質の再凝集、塩角の変化、具材粒子の沈降が全部残っています。</p>
+        <ul class="rules">
+          <li>全15問。各問、4択のどれも微妙に正しそうです。</li>
+          <li>回答前に自信度を選びます。高自信で正解すると加点、外すと大きく減点。</li>
+          <li>問題文中の「もっとも妥当」「観察上」は、ひっかけの合図です。</li>
+          <li>点数だけでなく、称号もかなり厳しめに判定されます。</li>
+        </ul>
+        <button class="primary" id="startBtn">検定を開始する</button>
+      </div>
+      <div>
+        <div class="soupBowl" aria-label="ラーメンスープのイメージ">
+          <span class="oil o1"></span><span class="oil o2"></span><span class="oil o3"></span>
+        </div>
+      </div>
+    </section>
+
+    <section id="game" class="card hidden">
+      <div class="topbar">
+        <div class="meters">
+          <div class="meter">問 <b id="qNo">1</b>/<span id="qTotal">15</span></div>
+          <div class="meter">得点 <b id="score">0</b></div>
+          <div class="meter danger">残り <b id="timer">45</b> 秒</div>
+          <div class="meter">連続正解 <b id="streak">0</b></div>
+        </div>
+        <button class="ghost" id="restartBtn">最初から</button>
+      </div>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+
+      <div style="height:14px"></div>
+      <div class="questionMeta">
+        <span id="category">分類</span>
+        <span id="difficulty">難度</span>
+      </div>
+      <div class="question" id="question"></div>
+      <div class="miniCase" id="miniCase"></div>
+      <div class="answers" id="answers"></div>
+
+      <div class="controls">
+        <label class="selectBox">自信度
+          <select id="confidence">
+            <option value="1">低：+10 / -2</option>
+            <option value="2" selected>中：+16 / -8</option>
+            <option value="3">高：+25 / -18</option>
+          </select>
+        </label>
+        <button class="primary" id="submitBtn" disabled>この答えで確定</button>
+        <button class="ghost hidden" id="nextBtn">次の丼へ</button>
+      </div>
+      <div class="explain" id="explain"></div>
+    </section>
+
+    <section id="result" class="card hidden">
+      <p class="resultBig">検定終了</p>
+      <div class="rank" id="rank"></div>
+      <p class="subtitle" id="resultText"></p>
+      <div class="meters">
+        <div class="meter">最終得点 <b id="finalScore"></b></div>
+        <div class="meter">正解数 <b id="correctCount"></b>/15</div>
+        <div class="meter">最大連続正解 <b id="maxStreak"></b></div>
+      </div>
+      <div class="history" id="history"></div>
+      <div class="controls">
+        <button class="primary" id="againBtn">もう一杯挑戦する</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>※これは食品科学っぽさをゲーム化した娯楽用検定です。実際の衛生・健康判断は状況により異なります。</footer>
+</div>
+
+<script>
+const rawQuestions = [
+  {
+    category:"油膜・熱履歴", difficulty:"★★★★★",
+    q:"残りスープが冷めるにつれて、表面の油膜が『島状』に割れて見える主因として、観察上もっとも妥当なのはどれか。",
+    case:"条件：豚骨醤油系。完食後4分放置。丼を軽く傾けると、油膜が一枚板ではなく薄い斑点の連結として動く。",
+    choices:[
+      "脂質相の粘度上昇と界面張力差により、薄い油相が連続膜を保ちにくくなる",
+      "食塩濃度の上昇だけで油脂が瞬時に鹸化し、石鹸状の固相に変化する",
+      "レンゲ由来の金属イオンだけが油滴を選択的に磁化し、凝集位置を固定する",
+      "麺のグルテン網目が表面まで浮上し、油膜を物理的に四角く切断する"
+    ],
+    answer:0,
+    explain:"冷却で油脂の粘性や一部成分の流動性が変わり、さらに界面張力差や対流の弱まりで、連続膜より島状の油滴・薄膜として見えやすくなります。食塩だけで鹸化するわけではありません。"
+  },
+  {
+    category:"塩分・味覚", difficulty:"★★★★★",
+    q:"麺を食べ終えた後の残りスープで『塩角が丸くなった』と感じる場合、もっともあり得る複合要因はどれか。",
+    case:"条件：醤油清湯。食べ始めは塩味が立つ。後半は同じスープなのに、しょっぱさの輪郭が鈍い。",
+    choices:[
+      "唾液・麺由来成分・温度低下により、塩味の立ち上がりと香気の出方が変化した",
+      "塩化ナトリウムが時間経過で糖に変換され、甘味が塩味を完全に打ち消した",
+      "丼の陶器成分が塩分を全量吸着し、残りスープが無塩に近づいた",
+      "チャーシューの脂だけが塩味受容体を恒久的に麻痺させ、味覚を固定した"
+    ],
+    answer:0,
+    explain:"温度低下、唾液混入、麺からのデンプン・タンパク質成分、油脂の状態変化などで味の立ち上がりが変わります。塩が糖になる、陶器が全量吸着する、などは現実的ではありません。"
+  },
+  {
+    category:"麺由来デンプン", difficulty:"★★★★☆",
+    q:"替え玉後の残りスープが、最初よりわずかに『もったり』する理由として最も妥当なのはどれか。",
+    case:"条件：細麺の豚骨。替え玉1回。スープ量は減っているが、レンゲで流すと線が一瞬残る。",
+    choices:[
+      "麺表面から溶出したデンプンや微粒子が、少量スープ中で相対的に濃くなる",
+      "替え玉の投入により水分子がすべて蒸発し、油脂だけの液体に置換される",
+      "小麦粉中の鉄分がレンゲと反応し、全スープをゲル化する磁性膜を作る",
+      "丼底の模様釉薬が溶け出し、増粘剤として一律に作用する"
+    ],
+    answer:0,
+    explain:"替え玉や麺の攪拌で、麺表面のデンプン質や微細な麺片がスープへ移ります。スープ量が減る後半ほど、体感粘度は上がりやすくなります。"
+  },
+  {
+    category:"丼底沈殿", difficulty:"★★★★★",
+    q:"残りスープをレンゲで底からすくった時だけ、魚粉感・ザラつきが強くなる。最も妥当な説明はどれか。",
+    case:"条件：魚介豚骨。混ぜずに麺を完食。最後の2口だけ粉っぽい。",
+    choices:[
+      "魚粉・節粉・香辛料片などの不溶性粒子が、時間とともに底部へ濃縮した",
+      "塩分だけが重いため底に沈み、上澄みと底で完全に分離した",
+      "油脂がすべて底へ沈降し、魚粉に見える白色結晶へ変化した",
+      "麺のかん水が底面で発泡し、魚介香を持つ気泡だけを生成した"
+    ],
+    answer:0,
+    explain:"魚粉や香辛料片、骨粉状の微粒子などは完全には溶けず、静置で沈みやすいです。混ぜずに食べ進めると、最後に底の粒子濃度が高く感じられます。"
+  },
+  {
+    category:"乳化・白濁", difficulty:"★★★★★",
+    q:"白濁系スープの残りが、冷めると『白い濁り』と『透明寄りの液層』に少し分かれて見えることがある。主因として最も妥当なのはどれか。",
+    case:"条件：豚骨白湯。食後6分放置。表面に脂、中央に白濁、縁に薄い液層。",
+    choices:[
+      "乳化粒子・脂質・タンパク質微粒子の分散安定性が温度低下と静置で変化する",
+      "豚骨のカルシウムが瞬間的に透明化し、スープ全体を蒸留水へ戻す",
+      "白色は照明の反射だけなので、温度変化とは一切関係がない",
+      "ネギの葉緑素が白濁成分をすべて吸着し、完全な二層分離を起こす"
+    ],
+    answer:0,
+    explain:"白湯の白さは脂質やタンパク質、微粒子の分散に強く関係します。静置や温度低下で分散状態が変化すると、縁や表面で濃淡の差が見えやすくなります。"
+  },
+  {
+    category:"香気", difficulty:"★★★★☆",
+    q:"食べ終わりの残りスープで、最初より香りが弱く感じる理由として最も妥当なのはどれか。",
+    case:"条件：鶏油の香りが強い醤油ラーメン。着丼直後は香りが立つが、最後は穏やか。",
+    choices:[
+      "揮発性香気成分の放散、温度低下、鼻の順応が重なって香りの立ち方が弱くなる",
+      "スープ中の香気分子が全て食塩に変換され、香り物質が消滅する",
+      "丼の縁が香りを吸い込み、食後は香気を外へ出さなくなる",
+      "レンゲを使うほど酸素が完全に遮断され、香りの分子運動が停止する"
+    ],
+    answer:0,
+    explain:"香りは温度、揮発、鼻の慣れに大きく影響されます。着丼直後の高温状態では香気が立ちやすく、後半は穏やかに感じやすいです。"
+  },
+  {
+    category:"酸味・後味", difficulty:"★★★★★",
+    q:"煮干し系の残りスープで、後半に苦味や酸味が目立つように感じることがある。もっとも妥当な説明はどれか。",
+    case:"条件：煮干し強め。麺完食後、底の方を飲むと輪郭が硬く感じる。",
+    choices:[
+      "温度低下・粒子濃縮・香味油減少の体感により、苦味や酸味の輪郭が相対的に目立つ",
+      "煮干し由来の苦味成分が時間経過でカフェインへ変換され、刺激が増える",
+      "残りスープでは水だけが選択的に塩へ変化し、酸味が物理的に発生する",
+      "レンゲの角度が変わると舌の酸味受容体だけが閉鎖し、苦味に置換される"
+    ],
+    answer:0,
+    explain:"温度低下や油の減少感、底部粒子の濃縮で、苦味・酸味・渋みの印象が強くなることがあります。成分がカフェインへ変わるわけではありません。"
+  },
+  {
+    category:"衛生・放置", difficulty:"★★★★☆",
+    q:"残りスープを長時間常温放置した場合の説明として、最も実務的に妥当なのはどれか。",
+    case:"条件：食後の丼。唾液・箸・具材片が混ざっている。室温で数時間放置。",
+    choices:[
+      "栄養分・水分・人の口由来の混入があり、時間と温度次第で微生物リスクが上がる",
+      "一度沸騰したスープは永久に無菌なので、何日置いても安全性は不変である",
+      "塩分がある食品では、常温であっても全ての微生物が即死する",
+      "油膜があると酸素が完全遮断されるため、全種類の劣化が停止する"
+    ],
+    answer:0,
+    explain:"加熱済みでも、食事中に唾液や箸、空気中のものが入ります。塩分や油膜があっても安全が永久に保たれるわけではなく、時間と温度管理が重要です。"
+  },
+  {
+    category:"水分蒸発", difficulty:"★★★★☆",
+    q:"熱い丼で残りスープ量が少ない時、最後の数分で味が濃く感じられる一因として最も妥当なのはどれか。",
+    case:"条件：底に30mL程度。丼はまだ熱い。会話してから飲むと濃い。",
+    choices:[
+      "液量が少ないため、蒸発や沈殿物の巻き上げが味の濃さに影響しやすい",
+      "水だけでなく塩分も同じ割合で蒸発するため、濃度は必ず完全に一定になる",
+      "丼が熱いほど水分子が新しく生成され、残りスープは薄くなる一方である",
+      "レンゲに触れた瞬間にうま味成分だけが気化し、塩味だけが固体化する"
+    ],
+    answer:0,
+    explain:"液量が少ないと、少量の蒸発や底の濃縮成分の巻き上げでも体感が変わりやすいです。塩分や多くのうま味成分は水のようには簡単に蒸発しません。"
+  },
+  {
+    category:"具材影響", difficulty:"★★★★★",
+    q:"海苔を長く浸した残りスープで、風味が急に『海藻寄り』へ傾く現象の説明として最も妥当なのはどれか。",
+    case:"条件：家系風。海苔を最後まで沈めていた。残りスープは磯感が強い。",
+    choices:[
+      "海苔由来の水溶性・分散性成分や細片がスープへ移り、香味の比率が変わる",
+      "海苔が塩分をすべて吸収し、代わりに砂糖だけを放出して味を変える",
+      "海苔の黒色素が麺の小麦成分を分解し、豚骨香を完全に消す",
+      "海苔を浸すとスープ中の水が海水に戻り、全成分が初期化される"
+    ],
+    answer:0,
+    explain:"海苔を浸すと、香りや微細な海苔片、うま味に関わる成分がスープへ移ります。残り量が少ないほど、具材由来の風味が相対的に支配的になります。"
+  },
+  {
+    category:"辛味成分", difficulty:"★★★★☆",
+    q:"辛味噌を溶かし切らずに食べた場合、最後の残りスープが急に辛くなる理由として最も妥当なのはどれか。",
+    case:"条件：辛味噌玉を半分だけ崩した。麺完食後、底から混ぜると辛さが跳ねる。",
+    choices:[
+      "溶け残った辛味ペーストや香辛料粒子が底部に偏り、最後に局所的に濃くなる",
+      "唐辛子成分は時間経過で必ず増殖するため、スープ中で辛味量が無限に増える",
+      "辛味は温度が下がるほど化学的に塩味へ変換され、舌で辛く感じる",
+      "麺を食べ終えると舌の甘味受容体が閉じ、辛味だけが100倍に増幅される"
+    ],
+    answer:0,
+    explain:"辛味噌や香辛料は完全に均一化しないことがあります。底部に濃い部分が残ると、最後に混ぜた瞬間に辛味が強く感じられます。"
+  },
+  {
+    category:"レンゲ観察", difficulty:"★★★★★",
+    q:"残りスープを白いレンゲに薄く広げた時、表面に細かな粒が見える。もっとも慎重な解釈はどれか。",
+    case:"条件：味噌ラーメン。丼内では均一に見えたが、レンゲ上では細粒が目立つ。",
+    choices:[
+      "味噌粒子・香辛料・脂滴・麺微粒子などが薄層化で見えやすくなった可能性がある",
+      "白いレンゲ上で見えた粒は必ず金属片であり、食品成分の可能性はない",
+      "粒が見えた時点で全ての粒子は病原体で、味噌由来の固形分は存在しない",
+      "レンゲに乗せるとスープ成分が結晶化し、全て同一サイズの塩粒へ変わる"
+    ],
+    answer:0,
+    explain:"薄く広げると、丼内では見えなかった味噌粒子や脂滴、香辛料、麺の微粒子が見えます。異物判断は形状・硬さ・発生状況などを分けて考える必要があります。"
+  },
+  {
+    category:"温度と口当たり", difficulty:"★★★★☆",
+    q:"同じ残りスープでも、熱い時よりぬるい時に『油っぽさ』を強く感じる場合、最も妥当な説明はどれか。",
+    case:"条件：背脂入り醤油。着丼直後は香ばしいが、最後は油の重さが目立つ。",
+    choices:[
+      "温度低下で脂の流動性や香りの立ち方が変わり、口中で重く感じやすくなる",
+      "油脂は低温になるほど完全に水へ変わるため、油っぽさは錯覚だけである",
+      "背脂は時間経過で食塩の結晶に変わり、油っぽさではなく塩の硬さだけになる",
+      "スープがぬるい時は舌が脂質を一切検知できないため、重さは発生しない"
+    ],
+    answer:0,
+    explain:"脂は温度によって流動性や口どけが変化します。香りが弱まった後に脂の触感だけが目立つと、後半に重く感じられることがあります。"
+  },
+  {
+    category:"完飲判定", difficulty:"★★★★★",
+    q:"『残りスープが濃い＝最初から塩分が高い』と断定しにくい理由として、最も妥当なのはどれか。",
+    case:"条件：残り30mLだけ飲むと濃い。しかし食べ始めの記憶は薄い。",
+    choices:[
+      "食べ進める間に液量低下・沈殿・温度・唾液・麺成分など複数要因が重なるため",
+      "残りスープは必ず店主が途中で追加した別液なので、初期スープとは無関係である",
+      "麺を食べると塩分測定の法則が消失し、味覚だけが唯一の物理量になる",
+      "濃いと感じた場合、必ず糖度がゼロになった証拠であり塩分とは関係しない"
+    ],
+    answer:0,
+    explain:"残りスープの体感は、初期設計だけでなく食べ方・温度・液量・麺や具材の影響を受けます。最後の印象だけで初期塩分を断定するのは危険です。"
+  },
+  {
+    category:"究極の総合", difficulty:"★★★★★★",
+    q:"次のうち、『残りスープの観察記録』として最も科学っぽく、かつ過剰断定を避けている記述はどれか。",
+    case:"条件：写真なし。醤油豚骨。最後の50mLで表面脂、底の粒子、後味の塩味を記録したい。",
+    choices:[
+      "食後5分、表面に油滴状の光沢、底部に微粒子感、温度低下後に塩味輪郭が強く感じられた、と記す",
+      "最後にしょっぱかったので、初期スープの塩分は必ず全ラーメン店中トップである、と記す",
+      "底に粒があったので、具材や調味料ではなく全て異物と確定した、と記す",
+      "油膜が見えたので、スープは水分を含まず脂質100%だった、と記す"
+    ],
+    answer:0,
+    explain:"観察では、時刻・状態・見え方・感じ方を分け、原因を断定しすぎないのが強いです。残りスープは複数要因が絡むので、記録文も慎重な表現が向いています。"
+  }
+];
+
+let questions = [];
+let index = 0;
+let score = 0;
+let selected = null;
+let locked = false;
+let timer = 45;
+let timerId = null;
+let streak = 0;
+let maxStreak = 0;
+let correctCount = 0;
+let history = [];
+
+const $ = id => document.getElementById(id);
+const start = $('start'), game = $('game'), result = $('result');
+const qNo=$('qNo'), qTotal=$('qTotal'), scoreEl=$('score'), timerEl=$('timer'), streakEl=$('streak'), bar=$('bar');
+const category=$('category'), difficulty=$('difficulty'), questionEl=$('question'), miniCase=$('miniCase'), answersEl=$('answers');
+const submitBtn=$('submitBtn'), nextBtn=$('nextBtn'), explain=$('explain'), confidence=$('confidence');
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function normalizeOptions(q){
+  const mapped = q.choices.map((text,i)=>({text, original:i, correct:i===q.answer}));
+  return {...q, options:shuffle(mapped)};
+}
+
+function startGame(){
+  questions = shuffle(rawQuestions).slice(0,15).map(normalizeOptions);
+  index=0;score=0;selected=null;locked=false;streak=0;maxStreak=0;correctCount=0;history=[];
+  start.classList.add('hidden'); result.classList.add('hidden'); game.classList.remove('hidden');
+  qTotal.textContent=questions.length;
+  renderQuestion();
+}
+
+function renderQuestion(){
+  clearInterval(timerId);
+  selected=null; locked=false; timer=45;
+  submitBtn.disabled=true; submitBtn.classList.remove('hidden'); nextBtn.classList.add('hidden'); explain.classList.remove('show'); explain.textContent='';
+  const q=questions[index];
+  qNo.textContent=index+1; scoreEl.textContent=score; timerEl.textContent=timer; streakEl.textContent=streak;
+  bar.style.width=((index)/questions.length*100)+'%';
+  category.textContent='分類：'+q.category;
+  difficulty.textContent='難度：'+q.difficulty;
+  questionEl.textContent=q.q;
+  miniCase.textContent=q.case;
+  answersEl.innerHTML='';
+  q.options.forEach((op,i)=>{
+    const btn=document.createElement('button');
+    btn.className='answer';
+    btn.type='button';
+    btn.innerHTML=`<span class="label">${String.fromCharCode(65+i)}</span><span>${op.text}</span>`;
+    btn.addEventListener('click',()=>selectAnswer(i));
+    btn.addEventListener('touchend',(e)=>{e.preventDefault();selectAnswer(i);},{passive:false});
+    answersEl.appendChild(btn);
+  });
+  timerId=setInterval(()=>{
+    timer--; timerEl.textContent=timer;
+    if(timer<=0){ lockAnswer(true); }
+  },1000);
+}
+
+function selectAnswer(i){
+  if(locked)return;
+  selected=i;
+  [...answersEl.children].forEach((b,n)=>b.classList.toggle('selected',n===i));
+  submitBtn.disabled=false;
+}
+
+function lockAnswer(timeout=false){
+  if(locked)return;
+  locked=true; clearInterval(timerId);
+  const q=questions[index];
+  const conf=Number(confidence.value);
+  const plus={1:10,2:16,3:25}[conf];
+  const minus={1:2,2:8,3:18}[conf];
+  let ok=false;
+
+  [...answersEl.children].forEach((b,n)=>{
+    const op=q.options[n];
+    if(op.correct)b.classList.add('correct');
+    if(selected===n && !op.correct)b.classList.add('wrong');
+  });
+
+  if(!timeout && selected!==null && q.options[selected].correct){
+    ok=true; correctCount++; streak++; maxStreak=Math.max(maxStreak,streak);
+    score += plus + Math.min(10, streak*2);
+  }else{
+    streak=0;
+    score -= timeout ? 12 : minus;
+  }
+  scoreEl.textContent=score; streakEl.textContent=streak;
+
+  const chosen = selected===null ? '時間切れ' : q.options[selected].text;
+  const correct = q.options.find(o=>o.correct).text;
+  history.push({no:index+1, ok, timeout, chosen, correct, title:q.category});
+
+  explain.innerHTML = `<b>${ok?'正解。残りスープ鑑識眼あり。':'不正解。丼底に沈みました。'}</b><br>${q.explain}<br><br><b>正解：</b>${correct}`;
+  explain.classList.add('show');
+  submitBtn.classList.add('hidden'); nextBtn.classList.remove('hidden');
+}
+
+function nextQuestion(){
+  if(index < questions.length-1){
+    index++; renderQuestion();
+  }else{
+    finishGame();
+  }
+}
+
+function finishGame(){
+  clearInterval(timerId);
+  game.classList.add('hidden'); result.classList.remove('hidden');
+  bar.style.width='100%';
+  $('finalScore').textContent=score;
+  $('correctCount').textContent=correctCount;
+  $('maxStreak').textContent=maxStreak;
+  let rank, text;
+  if(score>=310 && correctCount>=13){
+    rank='残りスープ相分離鑑識官・極';
+    text='完飲直前の数十mLから、油相・粒子相・温度履歴まで読む異常なレベルです。ほぼ丼底の研究者です。';
+  }else if(score>=230 && correctCount>=11){
+    rank='レンゲ薄層観察士・一級';
+    text='かなり強いです。選択肢の微妙な嘘を見抜けています。残りスープを観察対象として扱えています。';
+  }else if(score>=150 && correctCount>=8){
+    rank='丼底沈殿ウォッチャー';
+    text='良い線です。油膜・沈殿・温度の基本は押さえていますが、断定系のひっかけにまだ注意です。';
+  }else if(score>=70){
+    rank='替え玉後粘度見習い';
+    text='雰囲気は掴んでいます。残りスープでは「最初の味」ではなく「食後に変化した系」と考えるのがコツです。';
+  }else{
+    rank='スープをただの汁と思いし者';
+    text='まだ丼底の世界が開いていません。油膜・沈殿・温度低下・麺由来成分の4つを疑うところから再挑戦です。';
+  }
+  $('rank').textContent=rank;
+  $('resultText').textContent=text;
+  const hist=$('history'); hist.innerHTML='';
+  history.forEach(h=>{
+    const div=document.createElement('div'); div.className='histItem';
+    div.innerHTML=`<b>問${h.no} ${h.ok?'○':'×'}｜${h.title}</b><br>あなた：${h.chosen}<br>正解：${h.correct}`;
+    hist.appendChild(div);
+  });
+}
+
+$('startBtn').addEventListener('click',startGame);
+$('againBtn').addEventListener('click',startGame);
+$('restartBtn').addEventListener('click',()=>{clearInterval(timerId);start.classList.remove('hidden');game.classList.add('hidden');result.classList.add('hidden');});
+submitBtn.addEventListener('click',()=>lockAnswer(false));
+nextBtn.addEventListener('click',nextQuestion);
+</script>
+</body>
+</html>
